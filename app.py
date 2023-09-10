@@ -13,7 +13,7 @@ def fetch_data():
     try:
         url = request.args.get('url')  # Lấy URL từ tham số truy vấn
         # Khởi tạo trình duyệt Selenium
-        driver = webdriver.Chrome()
+        driver = webdriver.Chrome('./chromedriver')
         driver.get(url)  # Mở URL trong trình duyệt
 
         # Thực hiện các tác vụ Selenium ở đây
