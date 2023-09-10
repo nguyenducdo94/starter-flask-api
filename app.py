@@ -39,6 +39,8 @@ def check_os():
     system_info = platform.system()
     print(f'Hệ điều hành: {system_info}')
 
+    return(f'Hệ điều hành: {system_info}')
+
     # Kiểm tra phiên bản hệ điều hành (chỉ áp dụng cho Linux)
     if system_info == 'Linux':
         try:
