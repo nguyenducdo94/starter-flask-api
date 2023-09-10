@@ -20,6 +20,8 @@ def fetch_data():
         # Ví dụ: Lấy tiêu đề của trang
         title = driver.title
 
+        print("title")
+
         driver.quit()
 
         return jsonify({'title': title})
