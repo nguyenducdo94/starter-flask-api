@@ -15,7 +15,7 @@ def fetch_data():
 
         print(f'gotta url {url}')
         # Khởi tạo trình duyệt Selenium
-        driver = webdriver.Chrome('./chromedriver')
+        driver = webdriver.Chrome('./chromedriver.exe')
         print(f'created driver')
         driver.get(url)  # Mở URL trong trình duyệt
         print(f'gotta to {url}')
