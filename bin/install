@@ -5,8 +5,8 @@ source "${VENV_NAME}/bin/activate"
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 
-sudo amazon-linux-extras install epel
-sudo yum install -y chromium
+amazon-linux-extras install epel
+yum install -y chromium
 chromium --version
 
 cat << EOF_INSTALL
