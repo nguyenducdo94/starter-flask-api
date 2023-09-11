@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from selenium import webdriver
 import os
 import platform
@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return 'Hello Aifone API'
+    return render_template('/templates/index.html')
 
 @app.route('/fetch_data', methods=['GET'])
 def fetch_data():
