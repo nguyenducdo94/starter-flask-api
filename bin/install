@@ -5,13 +5,6 @@ source "${VENV_NAME}/bin/activate"
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 
-CHROME_DRIVER_VERSION="94.0.4606.61"
-wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
-unzip chromedriver_linux64.zip
-rm chromedriver_linux64.zip
-mv chromedriver ${VENV_NAME}/bin/
-export PATH="${PATH}:${VIRTUAL_ENV}/bin"
-
 
 cat << EOF_INSTALL
 
@@ -22,12 +15,5 @@ To activate the virtual environment, run:
 To deactivate the virtual environment, run:
 
     deactivate
-
-To install Chrome Driver, make sure you are in the virtual environment, and run:
-
-    wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
-    unzip chromedriver_linux64.zip
-    rm chromedriver_linux64.zip
-    mv chromedriver ${VENV_NAME}/bin/
 
 EOF_INSTALL
