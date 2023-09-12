@@ -37,16 +37,18 @@ def check_os():
 @app.route('/crawl')
 def scrape_and_render():
     # Gửi yêu cầu đến trang web
-    url = request.args.get("link")  # Thay đổi URL thành trang web bạn muốn gửi yêu cầu đến
-
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        # Lưu nội dung HTML vào một tệp
-        with open('response.html', 'w', encoding='utf-8') as html_file:
-            html_file.write(response.text)
-
-        # Trả về nội dung HTML dưới dạng template
-        return render_template('response.html')
-    else:
-        return "Không thể tải trang web."
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Dynamic HTML</title>
+    </head>
+    <body>
+        <h1>Hello, Flask!</h1>
+        <p>This is dynamically generated HTML.</p>
+    </body>
+    </html>
+    """
+    
+    # Return the HTML content
+    return html_content
