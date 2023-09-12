@@ -36,19 +36,12 @@ def check_os():
 
 @app.route('/crawl')
 def scrape_and_render():
+    url = request.args.get("link")
+
+    content = requests.get(url)
+
     # Gửi yêu cầu đến trang web
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Dynamic HTML</title>
-    </head>
-    <body>
-        <h1>Hello, Flask!</h1>
-        <p>This is dynamically generated HTML.</p>
-    </body>
-    </html>
-    """
+    html_content = content.text
     
     # Return the HTML content
     return html_content
