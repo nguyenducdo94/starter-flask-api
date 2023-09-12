@@ -1,13 +1,14 @@
 from flask import Flask, jsonify, request, render_template
 import os
 import platform
+import requests
 
 
 app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return render_template('/templates/index.html')
+    return render_template('index.html')
 
 @app.route('/checkos')
 def check_os():
@@ -32,3 +33,16 @@ def check_os():
 
     
     return(f'Hệ điều hành: {system_info}')
+
+@app.route('/crawl')
+def scrape_and_render():
+    # Gửi yêu cầu đến trang web
+    url = request.args.get("link")  # Thay đổi URL thành trang web bạn muốn gửi yêu cầu đến
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        # Trả về nội dung HTML dưới dạng template
+        return render_template('rendered_template.html', content=response.text)
+    else:
+        return "Không thể tải trang web."
