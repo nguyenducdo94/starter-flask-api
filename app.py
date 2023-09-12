@@ -42,7 +42,11 @@ def scrape_and_render():
     response = requests.get(url)
 
     if response.status_code == 200:
+        # Lưu nội dung HTML vào một tệp
+        with open('response.html', 'w', encoding='utf-8') as html_file:
+            html_file.write(response.text)
+
         # Trả về nội dung HTML dưới dạng template
-        return render_template('rendered_template.html', content=response.text)
+        return render_template('response.html')
     else:
         return "Không thể tải trang web."
