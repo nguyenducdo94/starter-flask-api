@@ -1,9 +1,20 @@
-/* main.css */
 body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* Để trang web căn giữa chiều dọc */
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
     margin: 0;
     padding: 0;
+}
+
+h1,
+ul {
+    text-align: center;
+    /* Để căn giữa văn bản nếu cần */
 }
 
 h1 {
