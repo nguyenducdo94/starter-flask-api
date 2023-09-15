@@ -70,39 +70,6 @@ def crawl():
     # Return the HTML content
     return html_content
 
-@app.route('/reset_app')
-def reset_app():
-    def restart_server():
-        try:
-            # Chạy tệp restart.sh để khởi động lại máy chủ
-            subprocess.run(['./bin/start'], check=True)
-            print('Máy chủ đã được khởi động lại thành công!')
-        except subprocess.CalledProcessError:
-            print('Không thể khởi động lại máy chủ.')
 
-    def kill_python_processes():
-        time.sleep(1)
-        # Tìm tất cả các tiến trình Python
-        for process in psutil.process_iter(attrs=['pid', 'name']):
-            if "python" in process.info['name']:
-                pid = process.info['pid']
-                print(f"Killing Python process with PID {pid}")
-                try:
-                    psutil.Process(pid).terminate()
-                except psutil.NoSuchProcess:
-                    pass
-
-    thread1 = threading.Thread(target=restart_server)
-    thread2 = threading.Thread(target=kill_python_processes)
-    # Bắt đầu chạy các luồng
-    thread1.start()
-    thread2.start()
-
-    # Chờ cho đến khi cả hai luồng hoàn thành
-    thread1.join()
-    thread2.join()
-
-    return 'Đã hoàn thành.'
-
-if __name__ == '__main__':
-    app.run()
+# if __name__ == '__main__':
+#     app.run()

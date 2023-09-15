@@ -2,4 +2,4 @@
 
 sleep 5
 
-PYTHONUNBUFFERED=TRUE python app.py
+PYTHONUNBUFFERED=TRUE python server.py
