@@ -13,7 +13,7 @@ body {
 
 h1,
 ul {
-    text-align: center;
+    text-align: left;
     /* Để căn giữa văn bản nếu cần */
 }
 
@@ -22,6 +22,63 @@ h1 {
 }
 
 ul {
-    list-style-type: square;
+    list-style-type: none;
     margin-left: 20px;
+}
+
+li {
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+.icon {
+    font-size: 20px;
+    /* Đặt kích thước của biểu tượng */
+    color: #4CAF50;
+    /* Đặt màu của biểu tượng */
+    margin-right: 10px;
+    /* Tạo khoảng cách giữa biểu tượng và văn bản */
+}
+
+
+a {
+    color: #333;
+    /* Đặt màu văn bản cho thẻ <a> */
+    text-decoration: none;
+    /* Loại bỏ gạch chân */
+}
+
+form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input[type="text"],
+input[type="password"] {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
 }

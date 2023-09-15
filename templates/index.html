@@ -2,18 +2,34 @@
 <html>
 
 <head>
-  <title>Facebook Tool</title>
+  <title>Online Tool</title>
   <link rel="stylesheet" type="text/css" href="/static/main.css">
 </head>
 
 <body>
-  <h1>Facebook Tool</h1>
+  <h1>ONLINE TOOL</h1>
   <ul>
-    <li>Chức năng 1: [Mô tả chức năng 1]</li>
-    <li>Chức năng 2: [Mô tả chức năng 2]</li>
-    <li>Chức năng 3: [Mô tả chức năng 3]</li>
+    <li><span class="icon">&#9733;</span><a href="facebook">FACEBOOK</a></li>
+    <li><span class="icon">&#9733;</span><a href="tiktok">TIKTOK</a></li>
+    <li><span class="icon">&#9733;</span><a href="youtube">YOUTUBE</a></li>
     <!-- Thêm các chức năng khác nếu cần -->
   </ul>
+  <button id="checkIPButton">Kiểm tra IP</button>
+  <p id="ipDisplay"></p>
+
+  <script>
+    // Sử dụng JavaScript để thực hiện kiểm tra IP và hiển thị nó
+    document.getElementById("checkIPButton").addEventListener("click", function () {
+      fetch("https://api64.ipify.org?format=json")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("ipDisplay").innerText = "Địa chỉ IP của bạn là: " + data.ip;
+        })
+        .catch(error => {
+          console.error("Lỗi khi lấy địa chỉ IP: " + error.message);
+        });
+    });
+  </script>
 </body>
 
 </html>

@@ -7,8 +7,17 @@ import requests
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
+def homepage():
     return render_template('index.html')
+
+
+@app.route('/facebook')
+def facebookpage():
+    return render_template('facebook.html')
+
+@app.route('/facebook/getcookie')
+def getcookie():
+    return render_template('getcookie.html')
 
 @app.route('/checkos')
 def check_os():
@@ -61,3 +70,6 @@ def scrape_and_render():
     
     # Return the HTML content
     return html_content
+
+# if __name__ == '__main__':
+#     app.run()
