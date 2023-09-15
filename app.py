@@ -1,5 +1,5 @@
+import subprocess
 from flask import Flask, jsonify, request, render_template
-import os
 import platform
 import requests
 
@@ -74,6 +74,16 @@ def scrape_and_render():
     
     # Return the HTML content
     return html_content
+
+@app.route('/reset_app')
+def reset_app():
+    try:
+        # Chạy tệp restart.sh để khởi động lại máy chủ
+        subprocess.run(['./bin/restart.sh'], check=True)
+        return 'Máy chủ đã được khởi động lại thành công!', 200
+    except subprocess.CalledProcessError:
+        return 'Không thể khởi động lại máy chủ.', 500
+
 
 # if __name__ == '__main__':
 #     app.run()
