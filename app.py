@@ -88,6 +88,7 @@ def reset_app():
             print(process.info['name'])
             # Check if the process name matches the target
             if process.info['name'] == 'python':
+                print(process.info['pid'])
                 # Terminate the process
                 pid = process.info['pid']
                 psutil.Process(pid).terminate()
