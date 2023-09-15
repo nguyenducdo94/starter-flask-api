@@ -1,3 +1,5 @@
+import os
+import signal
 import subprocess
 from flask import Flask, jsonify, request, render_template
 import platform
@@ -77,12 +79,13 @@ def scrape_and_render():
 
 @app.route('/reset_app')
 def reset_app():
-    try:
-        # Chạy tệp restart.sh để khởi động lại máy chủ
-        subprocess.run(['./bin/restart'], check=True)
-        return 'Máy chủ đã được khởi động lại thành công!', 200
-    except subprocess.CalledProcessError:
-        return 'Không thể khởi động lại máy chủ.', 500
+    subprocess.run(['./bin/restart'], check=True)
+    
+    # Get the current process ID
+    current_pid = os.getpid()
+
+    # Send a SIGTERM signal to the current process to gracefully stop the server
+    os.kill(current_pid, signal.SIGTERM)
 
 
 # if __name__ == '__main__':
