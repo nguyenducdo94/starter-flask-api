@@ -79,7 +79,7 @@ def scrape_and_render():
 def reset_app():
     try:
         # Chạy tệp restart.sh để khởi động lại máy chủ
-        subprocess.run(['./bin/restart.sh'], check=True)
+        subprocess.run(['./bin/restart'], check=True)
         return 'Máy chủ đã được khởi động lại thành công!', 200
     except subprocess.CalledProcessError:
         return 'Không thể khởi động lại máy chủ.', 500
