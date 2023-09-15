@@ -25,27 +25,16 @@ def getcookie():
 
 @app.route('/checkos')
 def check_os():
-    # Kiểm tra hệ điều hành
-    system_info = platform.system()
-    print(f'Hệ điều hành: {system_info}')
+    # Get the operating system name
+    os_name = platform.system()
 
+    # Get the operating system version
+    os_version = platform.release()
 
-    # Kiểm tra phiên bản hệ điều hành (chỉ áp dụng cho Linux)
-    if system_info == 'Linux':
-        try:
-            with open('/etc/os-release', 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    if line.startswith('PRETTY_NAME='):
-                        _, os_name = line.split('=', 1)
-                        os_name = os_name.strip().strip('"')
-                        print(f'Phiên bản hệ điều hành: {os_name}')
-                        break
-        except FileNotFoundError:
-            pass
-
+    print(f"Operating System: {os_name}")
+    print(f"Operating System Version: {os_version}")
     
-    return(f'Hệ điều hành: {system_info}')
+    return(f'Operating System: {os_name} \n Operating System Version: {os_version}')
 
 @app.route('/check_ip')
 def check_ip():
