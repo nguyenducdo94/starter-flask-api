@@ -10,7 +10,6 @@ app = Flask(__name__)
 def homepage():
     return render_template('index.html')
 
-
 @app.route('/facebook')
 def facebookpage():
     return render_template('facebook.html')
@@ -43,6 +42,11 @@ def check_os():
     
     return(f'Hệ điều hành: {system_info}')
 
+@app.route('/check_ip')
+def check_ip():
+    res = requests.get("https://api64.ipify.org?format=json")
+    return res
+    
 @app.route('/crawl')
 def scrape_and_render():
     # url = request.args.get("link")
