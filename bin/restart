@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 # Dừng máy chủ hiện tại (thay thế 'server.py' bằng tên tệp và lệnh dừng của bạn)
-pkill -f server.py
+pid=$(ps aux | grep 'server.py' | grep -v grep | awk '{print $2}')
+if [ ! -z "$pid" ]; then
+    kill -9 "$pid"
+fi
 
 # Khởi động lại máy chủ
 PYTHONUNBUFFERED=TRUE python server.py
