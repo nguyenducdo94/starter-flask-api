@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
+kill -9 18
 
-sudo reboot
+sleep 5
 
 # Khởi động lại máy chủ
 PYTHONUNBUFFERED=TRUE python server.py
