@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
 
-# Dừng máy chủ hiện tại (thay thế 'server.py' bằng tên tệp và lệnh dừng của bạn)
-ps aux | grep python
-
-# Sau đó dùng lệnh kill để dừng tiến trình theo PID
-kill -9 PID
-
-
-sleep 5
+sudo reboot
 
 # Khởi động lại máy chủ
 PYTHONUNBUFFERED=TRUE python server.py
