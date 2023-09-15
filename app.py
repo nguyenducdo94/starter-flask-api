@@ -79,7 +79,7 @@ def scrape_and_render():
 
 @app.route('/reset_app')
 def reset_app():
-    subprocess.run(['./bin/restart'], check=True)
+    # subprocess.run(['./bin/restart'], check=True)
     
     # Get the current process ID
     current_pid = os.getpid()
