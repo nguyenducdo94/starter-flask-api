@@ -29,7 +29,7 @@ def check_os():
     os_name = platform.system()
 
     # Get the operating system version
-    os_version = platform.release()
+    os_version = platform.uname()
 
     print(f"Operating System: {os_name}")
     print(f"Operating System Version: {os_version}")
