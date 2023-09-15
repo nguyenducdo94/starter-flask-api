@@ -73,12 +73,7 @@ def crawl():
 @app.route('/reset_app')
 def reset_app():
     def restart_server():
-        try:
-            # Chạy tệp restart.sh để khởi động lại máy chủ
-            subprocess.run(['./bin/start'], check=True)
-            print('Máy chủ đã được khởi động lại thành công!')
-        except subprocess.CalledProcessError:
-            print('Không thể khởi động lại máy chủ.')
+        subprocess.run(['./bin/start'])
 
     def kill_python_processes():
         time.sleep(1)

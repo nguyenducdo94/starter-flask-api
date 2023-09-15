@@ -35,21 +35,6 @@
 
     document.getElementById("restartAppButton").addEventListener("click", function () {
       fetch("/reset_app", { method: "GET" })
-        .then(response => {
-          if (response.ok) {
-            return response.text();
-          } else {
-            throw new Error("Không thể khởi động lại ứng dụng.");
-          }
-        })
-        .then(data => {
-          console.log("Kết quả khởi động lại ứng dụng: " + data);
-          alert("Ứng dụng đã được khởi động lại.");
-        })
-        .catch(error => {
-          console.error("Lỗi khi khởi động lại ứng dụng: " + error.message);
-          alert("Không thể khởi động lại ứng dụng.");
-        });
     });
   </script>
 </body>
