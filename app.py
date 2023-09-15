@@ -1,6 +1,7 @@
 import signal
 import subprocess
 import sys
+import threading
 import time
 from flask import Flask, jsonify, request, render_template
 import os
@@ -42,7 +43,7 @@ def check_ip():
     return res.content
     
 @app.route('/crawl')
-def scrape_and_render():
+def crawl():
     # url = request.args.get("link")
 
     # Create a string containing the cookie data
@@ -71,12 +72,28 @@ def scrape_and_render():
 
 @app.route('/reset_app')
 def reset_app():
-    try:
-        # Chạy tệp restart.sh để khởi động lại máy chủ
-        subprocess.run(['./bin/start'], check=True)
-        return 'Máy chủ đã được khởi động lại thành công!', 200
-    except subprocess.CalledProcessError:
-        return 'Không thể khởi động lại máy chủ.', 500
+    def restart_server():
+        try:
+            # Chạy tệp restart.sh để khởi động lại máy chủ
+            subprocess.run(['./bin/start'], check=True)
+            print('Máy chủ đã được khởi động lại thành công!')
+        except subprocess.CalledProcessError:
+            print('Không thể khởi động lại máy chủ.')
+
+    def kill_python_processes():
+        time.sleep(1)
+        # Tìm tất cả các tiến trình Python
+        for process in psutil.process_iter(attrs=['pid', 'name']):
+            if "python" in process.info['name']:
+                pid = process.info['pid']
+                print(f"Killing Python process with PID {pid}")
+                try:
+                    psutil.Process(pid).terminate()
+                except psutil.NoSuchProcess:
+                    pass
+
+    thread1 = threading.Thread(target=restart_server)
+    thread2 = threading.Thread(target=kill_python_processes)
 
 
 # if __name__ == '__main__':
