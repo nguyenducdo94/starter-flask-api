@@ -94,7 +94,15 @@ def reset_app():
 
     thread1 = threading.Thread(target=restart_server)
     thread2 = threading.Thread(target=kill_python_processes)
+    # Bắt đầu chạy các luồng
+    thread1.start()
+    thread2.start()
 
+    # Chờ cho đến khi cả hai luồng hoàn thành
+    thread1.join()
+    thread2.join()
+
+    return 'Đã hoàn thành.'
 
 # if __name__ == '__main__':
 #     app.run()
