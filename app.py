@@ -44,8 +44,8 @@ def check_os():
 
 @app.route('/check_ip')
 def check_ip():
-    res = requests.get("https://api64.ipify.org")
-    return res
+    res = requests.get("https://api64.ipify.org?format=json")
+    return res.content
     
 @app.route('/crawl')
 def scrape_and_render():
