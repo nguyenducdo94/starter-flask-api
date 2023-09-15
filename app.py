@@ -87,11 +87,11 @@ def reset_app():
         try:
             print(process.info['name'])
             # Check if the process name matches the target
-            if process.info['name'] == 'app.py':
+            if process.info['name'] == 'python':
                 # Terminate the process
                 pid = process.info['pid']
                 psutil.Process(pid).terminate()
-                print(f"Terminated {'app.py'} with PID {pid}")
+                print(f"Terminated {'python'} with PID {pid}")
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
 
