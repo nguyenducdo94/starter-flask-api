@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Khởi động lại máy chủ
+PYTHONUNBUFFERED=TRUE python server.py
