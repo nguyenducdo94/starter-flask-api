@@ -82,19 +82,12 @@ def scrape_and_render():
 
 @app.route('/reset_app')
 def reset_app():
-    # Iterate through all running processes
-    for process in psutil.process_iter(attrs=['pid', 'name']):
-        try:
-            print(process.info['name'])
-            # Check if the process name matches the target
-            if process.info['name'] == 'python':
-                print(process.info['pid'])
-                # Terminate the process
-                pid = process.info['pid']
-                psutil.Process(pid).terminate()
-                print(f"Terminated {'python'} with PID {pid}")
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
+    try:
+        # Chạy tệp restart.sh để khởi động lại máy chủ
+        subprocess.run(['./bin/restart'], check=True)
+        return 'Máy chủ đã được khởi động lại thành công!', 200
+    except subprocess.CalledProcessError:
+        return 'Không thể khởi động lại máy chủ.', 500
 
 
 # if __name__ == '__main__':
