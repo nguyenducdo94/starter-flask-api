@@ -1,8 +1,11 @@
-import os
 import signal
 import subprocess
+import sys
+import time
 from flask import Flask, jsonify, request, render_template
+import os
 import platform
+import psutil
 import requests
 
 
@@ -79,13 +82,18 @@ def scrape_and_render():
 
 @app.route('/reset_app')
 def reset_app():
-    # subprocess.run(['./bin/restart'], check=True)
-    
-    # Get the current process ID
-    current_pid = os.getpid()
-
-    # Send a SIGTERM signal to the current process to gracefully stop the server
-    os.kill(current_pid, signal.SIGTERM)
+    # Iterate through all running processes
+    for process in psutil.process_iter(attrs=['pid', 'name']):
+        try:
+            print(process.info['name'])
+            # Check if the process name matches the target
+            if process.info['name'] == 'app.py':
+                # Terminate the process
+                pid = process.info['pid']
+                psutil.Process(pid).terminate()
+                print(f"Terminated {'app.py'} with PID {pid}")
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
 
 
 # if __name__ == '__main__':
