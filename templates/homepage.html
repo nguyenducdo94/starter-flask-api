@@ -30,7 +30,7 @@
   <script>
     // Sử dụng JavaScript để thực hiện kiểm tra IP và hiển thị nó
     document.getElementById("checkIPButton").addEventListener("click", function () {
-      fetch("https://facebooktool.cyclic.app/check_ip")
+      fetch("/check_ip")
         .then(response => response.json())
         .then(data => {
           document.getElementById("ipDisplay").innerText = "Địa chỉ IP của bạn là: " + data.ip;
