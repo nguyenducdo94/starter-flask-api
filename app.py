@@ -3,28 +3,84 @@ import subprocess
 import sys
 import threading
 import time
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, redirect, request, render_template, url_for
 import os
 import platform
 import psutil
 import requests
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 
 app = Flask(__name__)
+app.secret_key = 'facebook_tool_secret_key'
+
+login_manager = LoginManager()
+login_manager.login_view = 'login'  # Set the view function for login
+login_manager.init_app(app)
+
+# Sample list of valid usernames and passwords (for demonstration purposes)
+valid_users = {
+    'user1': 'password1',
+    'user2': 'password2',
+    'user3': 'password3'
+}
+
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
 
 @app.route('/')
 def homepage():
     return render_template('index.html')
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Check credentials (you can implement your own logic here)
+        if check_credentials(request.form['username'], request.form['password']):
+            user = User(id=request.form['username'])
+            login_user(user)
+            return redirect(url_for('homepage'))
+
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('homepage'))
+
+def check_credentials(username, password):
+    # Check if the provided username exists in the valid_users dictionary
+    if username in valid_users:
+        # Check if the provided password matches the stored password for the username
+        if password == valid_users[username]:
+            return True  # Authentication successful
+    return False  # Authentication failed
+
+@app.route('/protected')
+@login_required
+def protected():
+    return "This page is protected. You can only access it if you are logged in."
+
+@app.route('/profile')
+@login_required
+def profile():
+    return f"Hello, {current_user.id}! This is your profile page."
+
+
 @app.route('/facebook')
+@login_required
 def facebookpage():
     return render_template('facebook.html')
 
 @app.route('/facebook/getcookie')
+@login_required
 def getcookie():
     return render_template('getcookie.html')
 
 @app.route('/checkos')
+@login_required
 def check_os():
     # Get the operating system name
     os_name = platform.system()
@@ -38,11 +94,13 @@ def check_os():
     return(f'Operating System: {os_name} \n Operating System Version: {os_version}')
 
 @app.route('/check_ip')
+@login_required
 def check_ip():
     res = requests.get("https://api64.ipify.org?format=json")
     return res.content
     
 @app.route('/crawl')
+@login_required
 def crawl():
     # url = request.args.get("link")
 
@@ -71,6 +129,7 @@ def crawl():
     return html_content
 
 @app.route('/reset_app')
+@login_required
 def reset_app():
     def restart_server():
         subprocess.run(['./bin/start'])
