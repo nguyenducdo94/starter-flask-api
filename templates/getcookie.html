@@ -7,6 +7,13 @@
 </head>
 
 <body>
+    <div class="user-info">
+        {% if current_user.is_authenticated %}
+        <p>Xin chào, {{ current_user.username }}! (<a href="{{ url_for('logout') }}">Logout</a>)</p>
+        {% else %}
+        <p>Bạn chưa đăng nhập.</p>
+        {% endif %}
+    </div>
     <h1><a href="/" class="home-link">ONLINE TOOL</a> > <a href="/facebook" class="facebook-link">FACEBOOK</a> > LẤY
         COOKIE</h1>
     <form>

@@ -7,40 +7,27 @@ from flask import Flask, jsonify, redirect, request, render_template, url_for
 import os
 import platform
 import psutil
+import pymongo
 import requests
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-
-
-app = Flask(__name__)
-app.secret_key = 'facebook_tool_secret_key'
-
-login_manager = LoginManager()
-login_manager.login_view = 'login'  # Set the view function for login
-login_manager.init_app(app)
-
-# Sample list of valid usernames and passwords (for demonstration purposes)
-valid_users = {
-    'user1': 'password1',
-    'user2': 'password2',
-    'user3': 'password3'
-}
-
-class User(UserMixin):
-    def __init__(self, id):
-        self.id = id
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from bson import ObjectId
+from models import User
+from config import app, login_manager, users_collection
 
 @app.route('/')
+@login_required
 def homepage():
-    return render_template('index.html')
+    return render_template('homepage.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Check credentials (you can implement your own logic here)
-        if check_credentials(request.form['username'], request.form['password']):
-            user = User(id=request.form['username'])
-            login_user(user)
-            return redirect(url_for('homepage'))
+        username = request.form['username']
+        password = request.form['password']
+
+        # Implement your authentication logic here (e.g., check_credentials function)
+        if check_credentials(username, password):
+            return redirect(url_for('homepage'))  # Redirect to the homepage after successful login
 
     return render_template('login.html')
 
@@ -51,12 +38,24 @@ def logout():
     return redirect(url_for('homepage'))
 
 def check_credentials(username, password):
-    # Check if the provided username exists in the valid_users dictionary
-    if username in valid_users:
-        # Check if the provided password matches the stored password for the username
-        if password == valid_users[username]:
-            return True  # Authentication successful
+    # Retrieve user data from MongoDB based on the username
+    user_data = users_collection.find_one({"username": username})
+
+    if user_data and user_data["password"] == password:
+        user = User(user_data['_id'], user_data['username'])
+        login_user(user)
+        return redirect(url_for('homepage'))
+    
     return False  # Authentication failed
+
+@login_manager.user_loader
+def load_user(user_id):
+    user_data = user_data = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user_data:
+        user = User(user_id, user_data['username'])
+        return user
+    else:
+        return None
 
 @app.route('/protected')
 @login_required
@@ -66,7 +65,11 @@ def protected():
 @app.route('/profile')
 @login_required
 def profile():
-    return f"Hello, {current_user.id}! This is your profile page."
+    # Retrieve user data from MongoDB based on the username
+    user_data = users_collection.find_one({"_id": ObjectId(current_user.id)})
+    print(current_user.id)
+    print(user_data)
+    return f"Hello, {user_data['username']}! This is your profile page."
 
 
 @app.route('/facebook')
