@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Facebook Check New Post</title>
+    <link rel="stylesheet" type="text/css" href="/static/main.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.css">
+</head>
+
+<body>
+    <div class="user-info">
+        {% if current_user.is_authenticated %}
+        <p>Xin chào, {{ current_user.username }}! (<a href="{{ url_for('logout') }}">Logout</a>)</p>
+        {% else %}
+        <p>Bạn chưa đăng nhập.</p>
+        {% endif %}
+    </div>
+    <h1><a href="/" class="home-link">ONLINE TOOL</a> > <a href="/facebook" class="facebook-link">FACEBOOK</a> > THÔNG
+        BÁO BÀI VIẾT MỚI</h1>
+
+    {% if schedules %}
+    <div class="account-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tên Tài khoản</th>
+                    <th>Token</th>
+                    <th>Cookie</th>
+                    <th>Group ID</th>
+                    <th>Trạng Thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for schedule in schedules %}
+                <tr>
+                    <td title="{{ account.name }}">
+                        {{ account.name|truncate(20, true, '...') }}
+                    </td>
+                    <td title="{{ account.token }}">
+                        {{ account.token|truncate(20, true, '...') }}
+                        <span class="copy" onclick="copyText('{{ account.token}}')">📋</span>
+                    </td>
+                    <td title="{{ account.cookie }}">
+                        {{ account.cookie|truncate(20, true, '...') }}
+                        <span class="copy" onclick="copyText('{{ account.cookie}}')">📋</span>
+                    </td>
+                    <td>
+                        <button
+                            onclick="openEditModal({ '_id': '{{ account._id }}','name': '{{ account.name }}', 'token': '{{ account.token }}', 'cookie': '{{ account.cookie }}' })">Sửa</button>
+                        <button onclick="openDeleteConfirmModal('{{ account._id }}')">Xoá</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>Chưa có nhiệm vụ nào.</p>
+    {% endif %}
+
+    <!-- Button mở Form Thêm Tài khoản -->
+    <button id="add-button" onclick="openAddModal()">Thêm Nhiệm vụ</button>
+
+    <!-- Modal Thêm Tài khoản -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddModal()">&times;</span>
+            <h2>Thêm Nhiệm vụ</h2>
+            <label for="account-select">Chọn Tài khoản:</label>
+            <select id="account-select"></select>
+            <label for="group-id">Group ID:</label>
+            <input type="text" id="group-id">
+            <button onclick="addNewSchedule()">Lưu</button>
+        </div>
+    </div>
+
+    <!-- Modal Xoá Tài khoản -->
+    <div id="delete-confirm-modal" class="modal">
+        <div class="modal-content">
+            <h2>Bạn có chắc chắn muốn xóa tài khoản này?</h2>
+            <button data-account-id="" id="delete-confirm-yes" onclick="deleteAccountConfirmed()">Có</button>
+            <button style="margin-top: 10px;" onclick="closeDeleteConfirmModal()">Không</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('/facebook/get_owner_facebook_accounts')
+                .then(response => response.json())
+                .then(data => {
+                    const accountSelect = document.getElementById("account-select");
+
+                    // Lặp qua danh sách tài khoản và thêm mỗi tài khoản vào select
+                    data.forEach(account => {
+                        const option = document.createElement("option");
+                        option.value = account._id;
+                        option.text = account.name;
+
+                        accountSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error("Lỗi khi tải danh sách tài khoản:", error));
+        });
+
+        function openAddModal() {
+            document.getElementById('add-modal').style.display = 'block';
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').style.display = 'none';
+        }
+
+        function openDeleteConfirmModal(accountId) {
+            document.getElementById('delete-confirm-yes').setAttribute('data-account-id', accountId);
+            document.getElementById('delete-confirm-modal').style.display = 'block';
+        }
+
+        function closeDeleteConfirmModal() {
+            document.getElementById('delete-confirm-modal').style.display = 'none';
+        }
+
+        function addNewAccount() {
+            const accountName = document.getElementById('new-account-name').value;
+            const accountToken = document.getElementById('new-account-token').value;
+            const accountCookie = document.getElementById('new-account-cookie').value;
+
+            if (accountName && accountToken && accountCookie) {
+                closeAddModal()
+                // Gửi thông tin tài khoản mới đến máy chủ
+                fetch('/facebook/add_account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: accountName,
+                        token: accountToken,
+                        cookie: accountCookie
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Kiểm tra kết quả và xử lý tương ứng
+                        if (data.success) {
+                            // Đã thêm thành công
+                            Toastify({
+                                text: 'Tài khoản đã được thêm thành công.',
+                                duration: 3000,  // Thời gian hiển thị (3 giây)
+                                close: true,
+                                gravity: 'top',  // Vị trí hiển thị
+                                position: 'center',  // Vị trí toast
+                            }).showToast();
+
+                            // Đợi 2 giây trước khi làm mới trang
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        } else {
+                            // Xử lý lỗi (nếu có)
+                            Toastify({
+                                text: `Đã xảy ra lỗi khi cập nhật tài khoản: ${data.error}`,
+                                duration: 3000,
+                                close: true,
+                                gravity: 'top',
+                                position: 'center',
+                            }).showToast();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        Toastify({
+                            text: 'Đã xảy ra lỗi khi thêm tài khoản.',
+                            duration: 3000,
+                            close: true,
+                            gravity: 'top',
+                            position: 'center',
+                        }).showToast();
+                    });
+            } else {
+                Toastify({
+                    text: 'Vui lòng điền đầy đủ thông tin tài khoản.',
+                    duration: 3000,
+                    close: true,
+                    gravity: 'top',
+                    position: 'center',
+                }).showToast();
+            }
+        }
+
+        function deleteAccountConfirmed() {
+            const accountId = document.getElementById('delete-confirm-yes').getAttribute('data-account-id');
+
+            closeDeleteConfirmModal()
+
+            fetch(`/facebook/delete_account/${accountId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Xóa thành công
+                        Toastify({
+                            text: 'Tài khoản đã được xoá thành công.',
+                            duration: 3000,  // Thời gian hiển thị (3 giây)
+                            close: true,
+                            gravity: 'top',  // Vị trí hiển thị
+                            position: 'center',  // Vị trí toast
+                        }).showToast();
+
+                        // Đợi 2 giây trước khi làm mới trang
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        console.error('Lỗi:', error);
+                        Toastify({
+                            text: `Đã xảy ra lỗi khi cập nhật tài khoản: ${data.error}`,
+                            duration: 3000,
+                            close: true,
+                            gravity: 'top',
+                            position: 'center',
+                        }).showToast();
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                    Toastify({
+                        text: 'Đã xảy ra lỗi khi xoá tài khoản.',
+                        duration: 3000,
+                        close: true,
+                        gravity: 'top',
+                        position: 'center',
+                    }).showToast();
+                });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</body>
+
+</html>

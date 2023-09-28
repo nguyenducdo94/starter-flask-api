@@ -12,8 +12,9 @@ import requests
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from bson import ObjectId
 from models import User
-from config import app, login_manager, users_collection
+from config import app, login_manager, users_collection, facebook_account_manager_collection, fb_check_new_post_scheduler_collection
 
+#----------------------------------PAGE APIs--------------------------------------#
 @app.route('/')
 @login_required
 def homepage():
@@ -75,13 +76,154 @@ def profile():
 @app.route('/facebook')
 @login_required
 def facebookpage():
-    return render_template('facebook.html')
+    return render_template('facebook/facebook.html')
+
+#----------------------------------FACEBOOK ACCOUNT MANAGER APIs--------------------------------------#
+@app.route('/facebook/accountmanager')
+@login_required
+def facebook_account_manager():
+    current_user_id = current_user.id
+
+    accounts = list(facebook_account_manager_collection.find({'manager_id': current_user_id}))
+
+    return render_template('facebook/account_manager.html', accounts=accounts)
+
+
+@app.route('/facebook/add_account', methods=['POST'])
+def facebook_add_account():
+    try:
+        # Nhận dữ liệu tài khoản từ yêu cầu POST
+        data = request.json
+
+        current_user_id = current_user.id
+
+        # Tạo một bản ghi tài khoản mới
+        new_account = {
+            'name': data.get('name'),
+            'token': data.get('token'),
+            'cookie': data.get('cookie'),
+            'manager_id': current_user_id
+        }
+
+        # Lưu thông tin tài khoản vào cơ sở dữ liệu
+        facebook_account_manager_collection.insert_one(new_account)
+
+        # Trả về phản hồi thành công
+        response = {
+            'success': True,
+            'message': 'Tài khoản đã được thêm thành công.'
+        }
+        return jsonify(response), 200
+    
+    except Exception as e:
+        # Xử lý lỗi (nếu có)
+        response = {
+            'success': False,
+            'message': 'Đã xảy ra lỗi khi thêm tài khoản.',
+            'error': str(e)
+        }
+        return jsonify(response), 500
+    
+
+@app.route('/facebook/update_account', methods=['PUT'])
+def facebook_update_account():
+    try:
+        data = request.json
+        # Xác định điều kiện để tìm tài khoản cần cập nhật
+        query = {'_id': ObjectId(data.get('id'))}
+
+        # Xác định thông tin cập nhật
+        update_data = {
+            '$set': {
+                'name': data.get('name'),
+                'token': data.get('token'),
+                'cookie': data.get('cookie')
+            }
+        }
+
+        # Thực hiện cập nhật tài khoản trong cơ sở dữ liệu
+        result = facebook_account_manager_collection.update_one(query, update_data)
+
+        if result.modified_count > 0:
+            # Cập nhật thành công
+            response = {
+                'success': True,
+                'message': 'Tài khoản đã được cập nhật thành công.'
+            }
+            return jsonify(response), 200
+        else:
+            # Không tìm thấy hoặc không có sự thay đổi
+            response = {
+                'success': False,
+                'message': 'Không tìm thấy hoặc không có sự thay đổi trong tài khoản.'
+            }
+            return jsonify(response), 404
+
+    except Exception as e:
+        # Xử lý lỗi (nếu có)
+        response = {
+            'success': False,
+            'message': 'Đã xảy ra lỗi khi cập nhật tài khoản.',
+            'error': str(e)
+        }
+        return jsonify(response), 500
+
+
+@app.route('/facebook/delete_account/<account_id>', methods=['DELETE'])
+def facebook_delete_account(account_id):
+    try:
+        print(account_id)
+        result = facebook_account_manager_collection.delete_one({'_id': ObjectId(account_id)})
+
+        if result.deleted_count > 0:
+            response = {
+                'success': True,
+                'message': 'Tài khoản đã được xóa thành công.'
+            }
+            return jsonify(response), 200
+        else:
+            response = {
+                'success': False,
+                'message': 'Không tìm thấy tài khoản có ID này.'
+            }
+            return jsonify(response), 404
+            
+    except Exception as e:
+        response = {
+            'success': False,
+            'message': 'Đã xảy ra lỗi khi xóa tài khoản.',
+            'error': str(e)
+        }
+        return jsonify(response), 500
 
 @app.route('/facebook/getcookie')
 @login_required
-def getcookie():
-    return render_template('getcookie.html')
+def facebook_get_cookie():
+    return render_template('facebook/getcookie.html')
 
+
+@app.route('/facebook/get_owner_facebook_accounts')
+@login_required
+def facebook_get_owner_facebook_accounts():
+    current_user_id = current_user.id
+    accounts = list(facebook_account_manager_collection.find({'manager_id': current_user_id}))
+    print(accounts)
+    for account in accounts:
+        account["_id"] = str(account["_id"])
+    return accounts
+
+#----------------------------------FACEBOOK CHECK NEW POST APIs--------------------------------------#
+@app.route('/facebook/checknewpost')
+@login_required
+def facebook_check_new_post():
+    current_user_id = current_user.id
+
+    schedules = list(fb_check_new_post_scheduler_collection.find({'fb_account_id': current_user_id}))
+
+    return render_template('facebook/check_new_post.html', schedules=schedules)
+
+
+#----------------------------------ANOTHER APIs--------------------------------------#
 @app.route('/checkos')
 @login_required
 def check_os():
