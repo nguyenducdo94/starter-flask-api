@@ -207,7 +207,6 @@ def facebook_get_cookie():
 def facebook_get_owner_facebook_accounts():
     current_user_id = current_user.id
     accounts = list(facebook_account_manager_collection.find({'manager_id': current_user_id}))
-    print(accounts)
     for account in accounts:
         account["_id"] = str(account["_id"])
     return jsonify(accounts)
