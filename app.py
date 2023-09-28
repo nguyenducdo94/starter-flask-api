@@ -210,7 +210,7 @@ def facebook_get_owner_facebook_accounts():
     print(accounts)
     for account in accounts:
         account["_id"] = str(account["_id"])
-    return accounts
+    return jsonify(accounts)
 
 #----------------------------------FACEBOOK CHECK NEW POST APIs--------------------------------------#
 @app.route('/facebook/checknewpost')
