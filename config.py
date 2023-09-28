@@ -24,5 +24,6 @@ app, login_manager, users_collection, facebook_account_manager_collection, fb_ch
 
 import boto3
 
+boto3.setup_default_session(region_name='us-east-1')
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('yellow-springbok-fezCyclicDB')
