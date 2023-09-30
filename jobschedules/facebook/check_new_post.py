@@ -13,5 +13,5 @@ class FacebookCheckNewPostScheduler():
         self.scheduler.remove_job(schedule_id)
 
     def check_new_post(self, schedule_id):
-        self.dynamodb_manager.find_check_new_post_schedule
+        # self.dynamodb_manager.find_check_new_post_schedule
         print(schedule_id)
