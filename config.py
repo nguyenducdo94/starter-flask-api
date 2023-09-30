@@ -13,7 +13,7 @@ class DynamoDBManager:
         login_manager.init_app(self.app)
 
         # DynamoDB Configuration
-        boto3.setup_default_session(region_name='us-east-1')
+        # boto3.setup_default_session(region_name='us-east-1')
         # self.session = boto3.Session(
         #     aws_access_key_id='ASIA2POOKCXIF3ZYAFK5',
         #     aws_secret_access_key='Kw4xD46NxaoBBZYjzZ1Dhwu08I1TZ4qr5Rhu1Oik',
