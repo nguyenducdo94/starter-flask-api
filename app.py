@@ -40,7 +40,11 @@ def check_credentials(username, password):
     # Retrieve user data from MongoDB based on the username
     user_data = dynamodb_manager.find_user("username", username)
 
+    print(user_data)
+
     if user_data and user_data["password"] == password:
+        print('verified')
+        
         user = User(user_data['sk'], user_data['username'])
         login_user(user)
         return redirect(url_for('homepage'))
