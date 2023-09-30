@@ -32,21 +32,21 @@
             <tbody>
                 {% for account in accounts %}
                 <tr>
-                    <td title="{{ account.name }}">
-                        {{ account.name|truncate(20, true, '...') }}
+                    <td title="{{ account.account_name }}">
+                        {{ account.account_name|truncate(20, true, '...') }}
                     </td>
-                    <td title="{{ account.token }}">
-                        {{ account.token|truncate(20, true, '...') }}
-                        <span class="copy" onclick="copyText('{{ account.token}}')">📋</span>
+                    <td title="{{ account.account_token }}">
+                        {{ account.account_token|truncate(20, true, '...') }}
+                        <span class="copy" onclick="copyText('{{ account.account_token}}')">📋</span>
                     </td>
-                    <td title="{{ account.cookie }}">
-                        {{ account.cookie|truncate(20, true, '...') }}
-                        <span class="copy" onclick="copyText('{{ account.cookie}}')">📋</span>
+                    <td title="{{ account.account_cookie }}">
+                        {{ account.account_cookie|truncate(20, true, '...') }}
+                        <span class="copy" onclick="copyText('{{ account.account_cookie}}')">📋</span>
                     </td>
                     <td>
                         <button
-                            onclick="openEditModal({ '_id': '{{ account._id }}','name': '{{ account.name }}', 'token': '{{ account.token }}', 'cookie': '{{ account.cookie }}' })">Sửa</button>
-                        <button onclick="openDeleteConfirmModal('{{ account._id }}')">Xoá</button>
+                            onclick="openEditModal({ 'sk': '{{ account.sk }}','account_name': '{{ account.account_name }}', 'account_token': '{{ account.account_token }}', 'account_cookie': '{{ account.account_cookie }}' })">Sửa</button>
+                        <button onclick="openDeleteConfirmModal('{{ account.sk }}')">Xoá</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -102,7 +102,7 @@
     <script>
         function openEditModal(account) {
             const myButton = document.getElementById('edit-save-btn');
-            myButton.setAttribute('data-account-id', account._id);
+            myButton.setAttribute('data-account-id', account.sk);
 
             // Lấy thẻ modal "Sửa Tài khoản"
             const editModal = document.getElementById('edit-modal');
@@ -113,9 +113,9 @@
             const editAccountCookie = document.getElementById('edit-account-cookie');
 
             // Đưa thông tin tài khoản cần chỉnh sửa vào các trường nhập dữ liệu
-            editAccountName.value = account.name;
-            editAccountToken.value = account.token;
-            editAccountCookie.value = account.cookie;
+            editAccountName.value = account.account_name;
+            editAccountToken.value = account.account_token;
+            editAccountCookie.value = account.account_cookie;
 
             // Hiển thị modal bằng cách đặt thuộc tính style.display thành 'block'
             editModal.style.display = 'block';
@@ -150,15 +150,15 @@
             if (accountName && accountToken && accountCookie) {
                 closeAddModal()
                 // Gửi thông tin tài khoản mới đến máy chủ
-                fetch('/facebook/add_account', {
+                fetch('/facebook/accountmanager/add_account', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        name: accountName,
-                        token: accountToken,
-                        cookie: accountCookie
+                        account_name: accountName,
+                        account_token: accountToken,
+                        account_cookie: accountCookie
                     })
                 })
                     .then(response => response.json())
@@ -177,7 +177,7 @@
                             // Đợi 2 giây trước khi làm mới trang
                             setTimeout(() => {
                                 window.location.reload();
-                            }, 2000);
+                            }, 1000);
                         } else {
                             // Xử lý lỗi (nếu có)
                             Toastify({
@@ -220,16 +220,16 @@
 
                 closeEditModal()
                 // Gửi thông tin cập nhật tài khoản đến máy chủ
-                fetch(`/facebook/update_account`, {
+                fetch(`/facebook/accountmanager/update_account`, {
                     method: 'PUT', // Hoặc 'PATCH' nếu bạn muốn sử dụng phương thức PATCH
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         id: accountId,
-                        name: accountName,
-                        token: accountToken,
-                        cookie: accountCookie
+                        account_name: accountName,
+                        account_token: accountToken,
+                        account_cookie: accountCookie
                     })
                 })
                     .then(response => response.json())
@@ -248,7 +248,7 @@
                             // Đợi 2 giây trước khi làm mới trang (hoặc thực hiện các hành động khác)
                             setTimeout(() => {
                                 window.location.reload();
-                            }, 2000);
+                            }, 1000);
                         } else {
                             // Xử lý lỗi (nếu có)
                             Toastify({
@@ -286,7 +286,7 @@
 
             closeDeleteConfirmModal()
 
-            fetch(`/facebook/delete_account/${accountId}`, {
+            fetch(`/facebook/accountmanager/delete_account/${accountId}`, {
                 method: 'DELETE'
             })
                 .then(response => response.json())
@@ -304,7 +304,7 @@
                         // Đợi 2 giây trước khi làm mới trang
                         setTimeout(() => {
                             window.location.reload();
-                        }, 2000);
+                        }, 1000);
                     } else {
                         console.error('Lỗi:', error);
                         Toastify({

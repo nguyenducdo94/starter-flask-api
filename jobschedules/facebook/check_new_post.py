@@ -1,13 +1,17 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from config import fb_check_new_post_scheduler_collection
 
-interval_seconds = 60
+class FacebookCheckNewPostScheduler():
+    def __init__(self, dynamodb_manager):
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+        self.dynamodb_manager = dynamodb_manager
 
-fb_check_new_post_scheduler = BackgroundScheduler()
+    def addJob(self, schedule_id, interval):
+        self.scheduler.add_job(lambda: self.check_new_post(schedule_id), 'interval', seconds=int(interval), id=schedule_id)
 
-def getjob():
-    allJobs = fb_check_new_post_scheduler_collection.find()
+    def removeJob(self, schedule_id):
+        self.scheduler.remove_job(schedule_id)
 
-fb_check_new_post_scheduler.add_job(getjob, 'interval', seconds=interval_seconds)
-
-fb_check_new_post_scheduler.start()
+    def check_new_post(self, schedule_id):
+        self.dynamodb_manager.find_check_new_post_schedule
+        print(schedule_id)

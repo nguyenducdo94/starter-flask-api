@@ -1,19 +1,17 @@
-import signal
 import subprocess
-import sys
 import threading
 import time
 from flask import Flask, jsonify, redirect, request, render_template, url_for
-import os
 import platform
 import psutil
-import pymongo
 import requests
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from bson import ObjectId
+from flask_login import login_user, login_required, logout_user, current_user
 from models import User
-from config import app, login_manager, users_collection, facebook_account_manager_collection, fb_check_new_post_scheduler_collection
+from config import DynamoDBManager,login_manager
+import uuid
+from jobschedules.facebook.check_new_post import FacebookCheckNewPostScheduler
 
+app = Flask(__name__)
 #----------------------------------PAGE APIs--------------------------------------#
 @app.route('/')
 @login_required
@@ -40,10 +38,10 @@ def logout():
 
 def check_credentials(username, password):
     # Retrieve user data from MongoDB based on the username
-    user_data = users_collection.find_one({"username": username})
+    user_data = dynamodb_manager.find_user("username", username)
 
     if user_data and user_data["password"] == password:
-        user = User(user_data['_id'], user_data['username'])
+        user = User(user_data['sk'], user_data['username'])
         login_user(user)
         return redirect(url_for('homepage'))
     
@@ -51,7 +49,7 @@ def check_credentials(username, password):
 
 @login_manager.user_loader
 def load_user(user_id):
-    user_data = user_data = users_collection.find_one({"_id": ObjectId(user_id)})
+    user_data = dynamodb_manager.load_user(user_id)
     if user_data:
         user = User(user_id, user_data['username'])
         return user
@@ -67,9 +65,7 @@ def protected():
 @login_required
 def profile():
     # Retrieve user data from MongoDB based on the username
-    user_data = users_collection.find_one({"_id": ObjectId(current_user.id)})
-    print(current_user.id)
-    print(user_data)
+    user_data = dynamodb_manager.find_user("sk", current_user.id)
     return f"Hello, {user_data['username']}! This is your profile page."
 
 
@@ -84,142 +80,193 @@ def facebookpage():
 def facebook_account_manager():
     current_user_id = current_user.id
 
-    accounts = list(facebook_account_manager_collection.find({'manager_id': current_user_id}))
+    accounts = dynamodb_manager.get_owner_facebook_accounts(current_user_id)
 
     return render_template('facebook/account_manager.html', accounts=accounts)
 
 
-@app.route('/facebook/add_account', methods=['POST'])
+@app.route('/facebook/accountmanager/add_account', methods=['POST'])
 def facebook_add_account():
-    try:
-        # Nhận dữ liệu tài khoản từ yêu cầu POST
-        data = request.json
+    # Nhận dữ liệu tài khoản từ yêu cầu POST
+    data = request.json
 
-        current_user_id = current_user.id
+    current_user_id = current_user.id
+    unique_key = str(uuid.uuid4())
 
-        # Tạo một bản ghi tài khoản mới
-        new_account = {
-            'name': data.get('name'),
-            'token': data.get('token'),
-            'cookie': data.get('cookie'),
-            'manager_id': current_user_id
-        }
+    new_account = {
+        'pk': 'facebook_account_manager',
+        'sk': unique_key,
+        'account_name': data.get('account_name'),
+        'account_token': data.get('account_token'),
+        'account_cookie': data.get('account_cookie'),
+        'manager_id': current_user_id
+    }
 
-        # Lưu thông tin tài khoản vào cơ sở dữ liệu
-        facebook_account_manager_collection.insert_one(new_account)
+    # Lưu thông tin tài khoản vào cơ sở dữ liệu
+    result = dynamodb_manager.add_facebook_account(new_account)
 
-        # Trả về phản hồi thành công
+    if result == 'success':
         response = {
             'success': True,
             'message': 'Tài khoản đã được thêm thành công.'
         }
         return jsonify(response), 200
-    
-    except Exception as e:
-        # Xử lý lỗi (nếu có)
-        response = {
-            'success': False,
-            'message': 'Đã xảy ra lỗi khi thêm tài khoản.',
-            'error': str(e)
-        }
-        return jsonify(response), 500
+
+    response = {
+        'success': False,
+        'message': 'Đã xảy ra lỗi khi thêm tài khoản.',
+        'error': str(result)
+    }
+    return jsonify(response), 500
     
 
-@app.route('/facebook/update_account', methods=['PUT'])
+@app.route('/facebook/accountmanager/update_account', methods=['PUT'])
 def facebook_update_account():
-    try:
-        data = request.json
-        # Xác định điều kiện để tìm tài khoản cần cập nhật
-        query = {'_id': ObjectId(data.get('id'))}
+    data = request.json
 
-        # Xác định thông tin cập nhật
-        update_data = {
-            '$set': {
-                'name': data.get('name'),
-                'token': data.get('token'),
-                'cookie': data.get('cookie')
-            }
-        }
+    result = dynamodb_manager.update_facebook_account(data)
 
-        # Thực hiện cập nhật tài khoản trong cơ sở dữ liệu
-        result = facebook_account_manager_collection.update_one(query, update_data)
-
-        if result.modified_count > 0:
-            # Cập nhật thành công
-            response = {
-                'success': True,
-                'message': 'Tài khoản đã được cập nhật thành công.'
-            }
-            return jsonify(response), 200
-        else:
-            # Không tìm thấy hoặc không có sự thay đổi
-            response = {
-                'success': False,
-                'message': 'Không tìm thấy hoặc không có sự thay đổi trong tài khoản.'
-            }
-            return jsonify(response), 404
-
-    except Exception as e:
-        # Xử lý lỗi (nếu có)
+    if result == 'success':
         response = {
-            'success': False,
-            'message': 'Đã xảy ra lỗi khi cập nhật tài khoản.',
-            'error': str(e)
+            'success': True,
+            'message': 'Tài khoản đã được thêm thành công.'
         }
-        return jsonify(response), 500
+        return jsonify(response), 200
+
+    response = {
+        'success': False,
+        'message': 'Đã xảy ra lỗi khi thêm tài khoản.',
+        'error': str(result)
+    }
+    return jsonify(response), 500
 
 
-@app.route('/facebook/delete_account/<account_id>', methods=['DELETE'])
+@app.route('/facebook/accountmanager/delete_account/<account_id>', methods=['DELETE'])
 def facebook_delete_account(account_id):
-    try:
-        print(account_id)
-        result = facebook_account_manager_collection.delete_one({'_id': ObjectId(account_id)})
+    result = dynamodb_manager.delete_facebook_account(account_id)
 
-        if result.deleted_count > 0:
-            response = {
-                'success': True,
-                'message': 'Tài khoản đã được xóa thành công.'
-            }
-            return jsonify(response), 200
-        else:
-            response = {
-                'success': False,
-                'message': 'Không tìm thấy tài khoản có ID này.'
-            }
-            return jsonify(response), 404
-            
-    except Exception as e:
+    if result == 'success':
         response = {
-            'success': False,
-            'message': 'Đã xảy ra lỗi khi xóa tài khoản.',
-            'error': str(e)
+            'success': True,
+            'message': 'Đã xoá tài khoản.'
         }
-        return jsonify(response), 500
+        return jsonify(response), 200
 
-@app.route('/facebook/getcookie')
-@login_required
-def facebook_get_cookie():
-    return render_template('facebook/getcookie.html')
+    response = {
+        'success': False,
+        'message': 'Đã xảy ra lỗi khi xoá tài khoản.',
+        'error': str(result)
+    }
+    return jsonify(response), 500
 
 
-@app.route('/facebook/get_owner_facebook_accounts')
+@app.route('/facebook/accountmanager/get_owner_facebook_accounts')
 @login_required
 def facebook_get_owner_facebook_accounts():
     current_user_id = current_user.id
-    accounts = list(facebook_account_manager_collection.find({'manager_id': current_user_id}))
-    for account in accounts:
-        account["_id"] = str(account["_id"])
-    return jsonify(accounts)
+    accounts = dynamodb_manager.get_owner_facebook_accounts(current_user_id)
+
+    return accounts
 
 #----------------------------------FACEBOOK CHECK NEW POST APIs--------------------------------------#
 @app.route('/facebook/checknewpost')
 @login_required
 def facebook_check_new_post():
     current_user_id = current_user.id
-
-    schedules = list(fb_check_new_post_scheduler_collection.find({'fb_account_id': current_user_id}))
+    schedules = dynamodb_manager.get_owner_check_new_post_schedules(current_user_id)
 
     return render_template('facebook/check_new_post.html', schedules=schedules)
+
+
+@app.route('/facebook/checknewpost/add_schedule', methods=['POST'])
+def facebook_add_check_new_post_schedule():
+    # Nhận dữ liệu tài khoản từ yêu cầu POST
+    data = request.json
+
+    current_user_id = current_user.id
+
+    unique_key = str(uuid.uuid4())
+
+    new_schedule = {
+        'pk': 'fb_check_new_post_scheduler',
+        'sk': unique_key,
+        'account_id': data.get('account_id'),
+        'group_id': data.get('group_id'),
+        'interval': data.get('interval'),
+        'active': False,
+        'manager_id': current_user_id
+    }
+
+    # Lưu thông tin tài khoản vào cơ sở dữ liệu
+    result = dynamodb_manager.add_check_new_post_schedule(new_schedule)
+
+    if result == 'success':
+        response = {
+            'success': True,
+            'message': 'Tài khoản đã được thêm thành công.'
+        }
+        return jsonify(response), 200
+
+    response = {
+        'success': False,
+        'message': 'Đã xảy ra lỗi khi thêm tài khoản.',
+        'error': str(result)
+    }
+    return jsonify(response), 500
+
+
+@app.route('/facebook/checknewpost/delete_schedule/<schedule_id>', methods=['DELETE'])
+def facebook_delete_check_new_post_schedule(schedule_id):
+    result = dynamodb_manager.delete_check_new_post_schedule(schedule_id)
+
+    if result == 'success':
+        response = {
+            'success': True,
+            'message': 'Đã xoá nhiệm vụ.'
+        }
+        return jsonify(response), 200
+
+    response = {
+        'success': False,
+        'message': 'Đã xảy ra lỗi khi xoá nhiệm vụ.',
+        'error': str(result)
+    }
+    return jsonify(response), 500
+
+
+@app.route('/facebook/checknewpost/toggle_schedule', methods=['POST'])
+def facebook_toggle_check_new_post_schedule():
+    data = request.json
+    result = dynamodb_manager.toggle_check_new_post_schedule(data)
+
+    schedule_id = data.get('scheduleId')
+
+    if data.get('newStatus') == True:
+        interval = dynamodb_manager.find_check_new_post_schedule(schedule_id)['interval']
+        fb_check_new_post_scheduler.addJob(schedule_id, interval)
+
+    elif data.get('newStatus') == False:
+        fb_check_new_post_scheduler.removeJob(data.get('scheduleId'))
+
+    if result == 'success':
+        response = {
+            'success': True,
+            'message': 'Đã đổi trạng thái.'
+        }
+        return jsonify(response), 200
+
+    response = {
+        'success': False,
+        'message': 'Đã xảy ra lỗi.',
+        'error': str(result)
+    }
+    return jsonify(response), 500
+
+#----------------------------------FACEBOOK GET COOKIE APIs--------------------------------------#
+@app.route('/facebook/getcookie')
+@login_required
+def facebook_get_cookie():
+    return render_template('facebook/getcookie.html')
 
 
 #----------------------------------ANOTHER APIs--------------------------------------#
@@ -301,6 +348,9 @@ def reset_app():
     thread2.join()
 
     return 'Đã hoàn thành.'
+
+dynamodb_manager = DynamoDBManager(app)
+fb_check_new_post_scheduler = FacebookCheckNewPostScheduler(dynamodb_manager)
 
 if __name__ == '__main__':
     app.run()

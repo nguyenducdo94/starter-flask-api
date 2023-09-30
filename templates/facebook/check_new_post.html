@@ -19,7 +19,7 @@
         BÁO BÀI VIẾT MỚI</h1>
 
     {% if schedules %}
-    <div class="account-table">
+    <div class="schedule-table">
         <table>
             <thead>
                 <tr>
@@ -27,27 +27,43 @@
                     <th>Token</th>
                     <th>Cookie</th>
                     <th>Group ID</th>
+                    <th>Tần số quét</th>
                     <th>Trạng Thái</th>
                 </tr>
             </thead>
             <tbody>
                 {% for schedule in schedules %}
                 <tr>
-                    <td title="{{ account.name }}">
-                        {{ account.name|truncate(20, true, '...') }}
+                    <td title="{{ schedule.account_name }}">
+                        {{ schedule.account_name|truncate(20, true, '...') }}
                     </td>
-                    <td title="{{ account.token }}">
-                        {{ account.token|truncate(20, true, '...') }}
-                        <span class="copy" onclick="copyText('{{ account.token}}')">📋</span>
+                    <td title="{{ schedule.account_token }}">
+                        {% if schedule.account_token|length > 0 %}
+                        {{ schedule.account_token|truncate(20, true, '...') }}
+                        <span class="copy" onclick="copyText('{{ schedule.account_token}}')">📋</span>
+                        {% endif %}
                     </td>
-                    <td title="{{ account.cookie }}">
-                        {{ account.cookie|truncate(20, true, '...') }}
-                        <span class="copy" onclick="copyText('{{ account.cookie}}')">📋</span>
+                    <td title="{{ schedule.account_cookie }}">
+                        {% if schedule.account_cookie|length > 0 %}
+                        {{ schedule.account_cookie|truncate(20, true, '...') }}
+                        <span class="copy" onclick="copyText('{{ schedule.account_cookie}}')">📋</span>
+                        {% endif %}
+                    </td>
+                    <td title="{{ schedule.group_id }}">
+                        {{ schedule.group_id|truncate(20, true, '...') }}
+                    </td>
+                    <td title="{{ schedule.interval }}">
+                        {{ schedule.interval }} (giây)
+                    </td>
+                    <td title="{{ schedule.active }}" id="schedule-toggle-{{ schedule.sk }}">
+                        <label class="toggle-switch">
+                            <input type="checkbox" {% if schedule.active %}checked{% endif %}
+                                onclick="toggleSchedule('{{ schedule.sk }}')">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </td>
                     <td>
-                        <button
-                            onclick="openEditModal({ '_id': '{{ account._id }}','name': '{{ account.name }}', 'token': '{{ account.token }}', 'cookie': '{{ account.cookie }}' })">Sửa</button>
-                        <button onclick="openDeleteConfirmModal('{{ account._id }}')">Xoá</button>
+                        <button onclick="openDeleteConfirmModal('{{ schedule.sk }}')">Xoá</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -70,6 +86,8 @@
             <select id="account-select"></select>
             <label for="group-id">Group ID:</label>
             <input type="text" id="group-id">
+            <label for="interval">Tần số quét (giây):</label>
+            <input type="text" id="interval">
             <button onclick="addNewSchedule()">Lưu</button>
         </div>
     </div>
@@ -77,15 +95,15 @@
     <!-- Modal Xoá Tài khoản -->
     <div id="delete-confirm-modal" class="modal">
         <div class="modal-content">
-            <h2>Bạn có chắc chắn muốn xóa tài khoản này?</h2>
-            <button data-account-id="" id="delete-confirm-yes" onclick="deleteAccountConfirmed()">Có</button>
+            <h2>Bạn có chắc chắn muốn xóa nhiệm vụ này?</h2>
+            <button data-schedule-id="" id="delete-confirm-yes" onclick="deleteScheduleConfirmed()">Có</button>
             <button style="margin-top: 10px;" onclick="closeDeleteConfirmModal()">Không</button>
         </div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            fetch('/facebook/get_owner_facebook_accounts')
+            fetch('/facebook/accountmanager/get_owner_facebook_accounts')
                 .then(response => response.json())
                 .then(data => {
                     const accountSelect = document.getElementById("account-select");
@@ -93,8 +111,8 @@
                     // Lặp qua danh sách tài khoản và thêm mỗi tài khoản vào select
                     data.forEach(account => {
                         const option = document.createElement("option");
-                        option.value = account._id;
-                        option.text = account.name;
+                        option.value = account.sk;
+                        option.text = account.account_name;
 
                         accountSelect.appendChild(option);
                     });
@@ -110,8 +128,8 @@
             document.getElementById('add-modal').style.display = 'none';
         }
 
-        function openDeleteConfirmModal(accountId) {
-            document.getElementById('delete-confirm-yes').setAttribute('data-account-id', accountId);
+        function openDeleteConfirmModal(scheduleId) {
+            document.getElementById('delete-confirm-yes').setAttribute('data-schedule-id', scheduleId);
             document.getElementById('delete-confirm-modal').style.display = 'block';
         }
 
@@ -119,23 +137,23 @@
             document.getElementById('delete-confirm-modal').style.display = 'none';
         }
 
-        function addNewAccount() {
-            const accountName = document.getElementById('new-account-name').value;
-            const accountToken = document.getElementById('new-account-token').value;
-            const accountCookie = document.getElementById('new-account-cookie').value;
+        function addNewSchedule() {
+            const accountId = document.getElementById('account-select').value;
+            const groupId = document.getElementById('group-id').value;
+            const interval = document.getElementById('interval').value;
 
-            if (accountName && accountToken && accountCookie) {
+            if (accountId && groupId) {
                 closeAddModal()
                 // Gửi thông tin tài khoản mới đến máy chủ
-                fetch('/facebook/add_account', {
+                fetch('/facebook/checknewpost/add_schedule', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        name: accountName,
-                        token: accountToken,
-                        cookie: accountCookie
+                        account_id: accountId,
+                        group_id: groupId,
+                        interval: interval
                     })
                 })
                     .then(response => response.json())
@@ -144,7 +162,7 @@
                         if (data.success) {
                             // Đã thêm thành công
                             Toastify({
-                                text: 'Tài khoản đã được thêm thành công.',
+                                text: 'Nhiệm vụ đã được thêm thành công.',
                                 duration: 3000,  // Thời gian hiển thị (3 giây)
                                 close: true,
                                 gravity: 'top',  // Vị trí hiển thị
@@ -154,11 +172,11 @@
                             // Đợi 2 giây trước khi làm mới trang
                             setTimeout(() => {
                                 window.location.reload();
-                            }, 2000);
+                            }, 1000);
                         } else {
                             // Xử lý lỗi (nếu có)
                             Toastify({
-                                text: `Đã xảy ra lỗi khi cập nhật tài khoản: ${data.error}`,
+                                text: `Đã xảy ra lỗi khi thêm nhiệm vụ: ${data.error}`,
                                 duration: 3000,
                                 close: true,
                                 gravity: 'top',
@@ -169,7 +187,7 @@
                     .catch(error => {
                         console.error('Lỗi:', error);
                         Toastify({
-                            text: 'Đã xảy ra lỗi khi thêm tài khoản.',
+                            text: 'Đã xảy ra lỗi khi thêm nhiệm vụ.',
                             duration: 3000,
                             close: true,
                             gravity: 'top',
@@ -178,7 +196,7 @@
                     });
             } else {
                 Toastify({
-                    text: 'Vui lòng điền đầy đủ thông tin tài khoản.',
+                    text: 'Vui lòng điền đầy đủ thông tin nhiệm vụ.',
                     duration: 3000,
                     close: true,
                     gravity: 'top',
@@ -187,12 +205,12 @@
             }
         }
 
-        function deleteAccountConfirmed() {
-            const accountId = document.getElementById('delete-confirm-yes').getAttribute('data-account-id');
+        function deleteScheduleConfirmed() {
+            const scheduleId = document.getElementById('delete-confirm-yes').getAttribute('data-schedule-id');
 
             closeDeleteConfirmModal()
 
-            fetch(`/facebook/delete_account/${accountId}`, {
+            fetch(`/facebook/checknewpost/delete_schedule/${scheduleId}`, {
                 method: 'DELETE'
             })
                 .then(response => response.json())
@@ -200,7 +218,7 @@
                     if (data.success) {
                         // Xóa thành công
                         Toastify({
-                            text: 'Tài khoản đã được xoá thành công.',
+                            text: 'Đã xoá nhiệm vụ.',
                             duration: 3000,  // Thời gian hiển thị (3 giây)
                             close: true,
                             gravity: 'top',  // Vị trí hiển thị
@@ -210,11 +228,11 @@
                         // Đợi 2 giây trước khi làm mới trang
                         setTimeout(() => {
                             window.location.reload();
-                        }, 2000);
+                        }, 1000);
                     } else {
                         console.error('Lỗi:', error);
                         Toastify({
-                            text: `Đã xảy ra lỗi khi cập nhật tài khoản: ${data.error}`,
+                            text: `Đã xảy ra lỗi khi xoá nhiệm vụ: ${data.error}`,
                             duration: 3000,
                             close: true,
                             gravity: 'top',
@@ -225,7 +243,7 @@
                 .catch(error => {
                     console.error('Lỗi:', error);
                     Toastify({
-                        text: 'Đã xảy ra lỗi khi xoá tài khoản.',
+                        text: 'Đã xảy ra lỗi khi xoá nhiệm vụ.',
                         duration: 3000,
                         close: true,
                         gravity: 'top',
@@ -233,6 +251,37 @@
                     }).showToast();
                 });
         }
+
+        function toggleSchedule(scheduleId) {
+            // Lấy trạng thái hiện tại của toggle switch
+            const checkbox = document.getElementById(`schedule-toggle-${scheduleId}`).querySelector('input[type="checkbox"]');
+            const isActive = checkbox.checked;
+
+            const newStatus = isActive;
+
+            fetch('/facebook/checknewpost/toggle_schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ newStatus: newStatus, scheduleId: scheduleId }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Xử lý phản hồi từ máy chủ (nếu cần)
+                    console.log('Update successful:', data);
+                })
+                .catch(error => {
+                    // Xử lý lỗi (nếu có)
+                    console.error('Update failed:', error);
+                });
+        }
+
     </script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </body>
