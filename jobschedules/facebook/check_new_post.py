@@ -1,4 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
+import requests
 
 class FacebookCheckNewPostScheduler():
     def __init__(self, dynamodb_manager):
@@ -13,5 +14,12 @@ class FacebookCheckNewPostScheduler():
         self.scheduler.remove_job(schedule_id)
 
     def check_new_post(self, schedule_id):
-        # self.dynamodb_manager.find_check_new_post_schedule
-        print(schedule_id)
+
+        bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
+        bot_chatID = '1659449821'
+        send_text ='https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' \
+            + bot_chatID + '&parse_mode=MarkdownV2&text=' + 'SEND TEST'
+        response = requests.get(send_text)
+        # print(response.json)
+
+        # telegram_bot_sendtext('SEND TEST')

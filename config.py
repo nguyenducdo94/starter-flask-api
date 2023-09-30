@@ -13,7 +13,6 @@ class DynamoDBManager:
         login_manager.init_app(self.app)
 
         # DynamoDB Configuration
-        boto3.setup_default_session(region_name='ap-southeast-1')
         # self.session = boto3.Session(
         #     aws_access_key_id='ASIA2POOKCXIF3ZYAFK5',
         #     aws_secret_access_key='Kw4xD46NxaoBBZYjzZ1Dhwu08I1TZ4qr5Rhu1Oik',
@@ -21,7 +20,10 @@ class DynamoDBManager:
         #     region_name='ap-southeast-1'
         # )
         # self.dynamodb = self.session.resource('dynamodb')
+
+        boto3.setup_default_session(region_name='ap-southeast-1')
         self.dynamodb = boto3.resource('dynamodb')
+        
         self.table = self.dynamodb.Table('yellow-springbok-fezCyclicDB')
 
     def find_user(self, field, value):    
