@@ -319,18 +319,18 @@ def facebook_start_check_new_post_schedule():
             # So sánh thời gian
             if created_time >= time_threshold and obj['id'] not in announced_id:
                 announced_id.append(obj['id'])
-                print(obj['message'])
-                bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
-                bot_chatID = '1659449821'
-                
-                content = f'{obj["message"]}\nlink:{obj["permalink_url"]}'
-                data = urllib.parse.quote(content)
-
                 bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
                 bot_chatID = '1659449821'
 
-                send_text = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={bot_chatID}&text={data}'
-                requests.get(send_text)
+                if 'message' in obj and 'permalink_url' in obj:
+                    content = f'{obj["message"]}\nlink:{obj["permalink_url"]}'
+                    data = urllib.parse.quote(content)
+
+                    bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
+                    bot_chatID = '1659449821'
+
+                    send_text = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={bot_chatID}&text={data}'
+                    requests.get(send_text)
 
         time.sleep(float(interval))
         
