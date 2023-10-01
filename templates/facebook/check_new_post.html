@@ -63,6 +63,7 @@
                         </label>
                     </td>
                     <td>
+                        <button onclick="openStartConfirmModal('{{ schedule.sk }}')">Bắt đầu</button>
                         <button onclick="openDeleteConfirmModal('{{ schedule.sk }}')">Xoá</button>
                     </td>
                 </tr>
@@ -101,6 +102,15 @@
         </div>
     </div>
 
+    <!-- Modal Start Schedule -->
+    <div id="start-confirm-modal" class="modal">
+        <div class="modal-content">
+            <h2>Bạn có chắc chắn muốn bắt đầu nhiệm vụ này?</h2>
+            <button data-schedule-id="" id="start-confirm-yes" onclick="startScheduleConfirmed()">Có</button>
+            <button style="margin-top: 10px;" onclick="closeStartConfirmModal()">Không</button>
+        </div>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             fetch('/facebook/accountmanager/get_owner_facebook_accounts')
@@ -135,6 +145,15 @@
 
         function closeDeleteConfirmModal() {
             document.getElementById('delete-confirm-modal').style.display = 'none';
+        }
+
+        function openStartConfirmModal(scheduleId) {
+            document.getElementById('start-confirm-yes').setAttribute('data-schedule-id', scheduleId);
+            document.getElementById('start-confirm-modal').style.display = 'block';
+        }
+
+        function closeStartConfirmModal() {
+            document.getElementById('start-confirm-modal').style.display = 'none';
         }
 
         function addNewSchedule() {
@@ -252,6 +271,23 @@
                 });
         }
 
+        function startScheduleConfirmed() {
+            const scheduleId = document.getElementById('start-confirm-yes').getAttribute('data-schedule-id');
+
+            closeStartConfirmModal()
+
+            fetch(`/facebook/checknewpost/start_schedule`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    scheduleId: scheduleId
+                })
+            })
+        }
+
+
         function toggleSchedule(scheduleId) {
             // Lấy trạng thái hiện tại của toggle switch
             const checkbox = document.getElementById(`schedule-toggle-${scheduleId}`).querySelector('input[type="checkbox"]');
@@ -282,6 +318,15 @@
                 });
         }
 
+
+        function copyText(content) {
+            const textArea = document.createElement("textarea");
+            textArea.value = content;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </body>

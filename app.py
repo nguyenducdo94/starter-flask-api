@@ -1,3 +1,5 @@
+import datetime
+import json
 import subprocess
 import threading
 import time
@@ -10,6 +12,7 @@ from models import User
 from config import DynamoDBManager,login_manager
 import uuid
 from jobschedules.facebook.check_new_post import FacebookCheckNewPostScheduler
+import urllib.parse
 
 app = Flask(__name__)
 #----------------------------------PAGE APIs--------------------------------------#
@@ -170,7 +173,7 @@ def facebook_get_owner_facebook_accounts():
     current_user_id = current_user.id
     accounts = dynamodb_manager.get_owner_facebook_accounts(current_user_id)
 
-    return accounts
+    return jsonify(accounts)
 
 #----------------------------------FACEBOOK CHECK NEW POST APIs--------------------------------------#
 @app.route('/facebook/checknewpost')
@@ -243,15 +246,15 @@ def facebook_toggle_check_new_post_schedule():
     data = request.json
     result = dynamodb_manager.toggle_check_new_post_schedule(data)
 
-    count = 0
-    while(count < 5):
-        bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
-        bot_chatID = '1659449821'
-        send_text ='https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' \
-            + bot_chatID + '&parse_mode=MarkdownV2&text=' + 'SEND TEST'
-        response = requests.get(send_text)
-        count = count + 1
-        time.sleep(5)
+    # count = 0
+    # while(count < 5):
+    #     bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
+    #     bot_chatID = '1659449821'
+    #     send_text ='https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' \
+    #         + bot_chatID + '&parse_mode=MarkdownV2&text=' + 'SEND TEST'
+    #     response = requests.get(send_text)
+    #     count = count + 1
+    #     time.sleep(5)
     
 
     if result == 'success':
@@ -267,6 +270,77 @@ def facebook_toggle_check_new_post_schedule():
         'error': str(result)
     }
     return jsonify(response), 500
+
+@app.route('/facebook/checknewpost/start_schedule', methods=['POST'])
+def facebook_start_check_new_post_schedule():
+    data = request.json
+
+    current_user_id = current_user.id
+    schedules = dynamodb_manager.get_owner_check_new_post_schedules(current_user_id)
+
+    matching_schedule = list(filter(lambda schedule: 'sk' in schedule and schedule['sk'] == data.get('scheduleId'), schedules))[0]
+    active = matching_schedule['active']
+    token = matching_schedule['account_token']
+    cookie = matching_schedule['account_cookie']
+    interval = matching_schedule['interval']
+    group_id = matching_schedule['group_id']
+
+    # Tách chuỗi cookie thành danh sách các phần tử cookie
+    cookie_list = cookie.split(';')
+
+    # Tạo một từ điển để lưu trữ các phần tử cookie
+    cookies = {}
+
+    # Lặp qua danh sách các phần tử cookie và thêm chúng vào từ điển
+    for cookie in cookie_list:
+        parts = cookie.split('=')
+        if len(parts) == 2:
+            key = parts[0].strip()
+            value = parts[1].strip()
+            cookies[key] = value
+
+    announced_id = []
+
+    while(active):
+        res = requests.get(f"https://graph.facebook.com/v18.0/{group_id}/feed?access_token={token}&debug=all&fields=permalink_url%2Cmessage%2Ccreated_time&format=json&method=get&pretty=0&suppress_http_code=1&transport=cors", cookies=cookies)
+        response_json = json.loads(res.content.decode('utf-8'))
+        # print(response_json)
+        response_data = response_json['data']
+
+        for obj in response_data:
+            current_time = datetime.datetime.now()
+            minutes_back = 10
+            time_threshold = current_time - datetime.timedelta(minutes=minutes_back)
+
+            created_time_str = obj['created_time']
+            created_time = datetime.datetime.strptime(created_time_str, '%Y-%m-%dT%H:%M:%S+0000')
+            created_time = created_time + datetime.timedelta(hours=7)
+            
+            # So sánh thời gian
+            if created_time >= time_threshold and obj['id'] not in announced_id:
+                announced_id.append(obj['id'])
+                print(obj['message'])
+                bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
+                bot_chatID = '1659449821'
+                
+                content = f'{obj["message"]}\nlink:{obj["permalink_url"]}'
+                data = urllib.parse.quote(content)
+
+                bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
+                bot_chatID = '1659449821'
+
+                send_text = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={bot_chatID}&text={data}'
+                requests.get(send_text)
+
+        time.sleep(float(interval))
+        
+        schedule = dynamodb_manager.find_check_new_post_schedule(data.get('scheduleId'))
+        active = schedule['active']
+
+    response = {
+        'success': True,
+    }
+    return jsonify(response), 200
 
 #----------------------------------FACEBOOK GET COOKIE APIs--------------------------------------#
 @app.route('/facebook/getcookie')
