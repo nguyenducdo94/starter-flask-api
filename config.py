@@ -14,9 +14,9 @@ class DynamoDBManager:
 
         # DynamoDB Configuration
         # self.session = boto3.Session(
-        #     aws_access_key_id='ASIA2POOKCXIF3ZYAFK5',
-        #     aws_secret_access_key='Kw4xD46NxaoBBZYjzZ1Dhwu08I1TZ4qr5Rhu1Oik',
-        #     aws_session_token='IQoJb3JpZ2luX2VjENT//////////wEaCmFwLXNvdXRoLTEiRzBFAiAe5oqkxEl4qbRnUtXrBg+GeyMCU2s3yDJaoXOt7pDWZwIhANUBdFZkGEs/+5SBPTqxUEh2LnLJGXotOzdn9lgPLn4WKrcCCM3//////////wEQABoMNzIwMzc2NTY3MjQ4IgziEKesbRGajo6PKU8qiwJTyIZWkPE37X974cJpzBS5X9wuqyGuPwmfI3uZMNjizDVNH8lfZDPe+SNLLp34DPS4kwecGe0SqB68OXJa6Tzf5/lmEJ35Awm8Jil4AlZwJkhRLo2ZvuEXeiCOiJlM01JuhZB8i26HVFXgYNkNg4FXg+EaHKfmA7HB3KBxBI+UwiHRyxP88xfKUYf9dZxScmVOm0qZG4XHcCP2WvoJehMDEBxHi/T31NY/sUmTyijQq03pdUVRpv+wVrRaVF+Sgb0B/EapwG0qlPDDo90GFDigzDKT7D/ycQdZsY7By7DINvBu9StkmaqfkSM/XTQNAixH83LhKvV/a9k920RDXLQc7ElZUORTbIeXfkMwgLfeqAY6nQHfEtgilr0s/76hIXGwyk5K4BI0H0ujijyyZ1qPb3aYdQR0Ag7oZtDGOnks0srH9A03O4yKUsVbfhwUm7C9lz9TscGVVGIkmd1MoSUI7FHbwMYkBWgs0VUwTJY1HmOHHSY+j6fTkIoMAyZflWl40jLQMfsoLi9PD4OEwy+ptk6ytXMdwksWqIDXk3ckId/cdVarEo5pQOtIYsF6tfpW',
+        #     aws_access_key_id='ASIA2POOKCXIOWKVQB4O',
+        #     aws_secret_access_key='gsU1VD5IaClCDe5GouFJ1+cVRz1DWBVTHJa55WGW',
+        #     aws_session_token='IQoJb3JpZ2luX2VjEOn//////////wEaCmFwLXNvdXRoLTEiRzBFAiBPX3aKfyfAYv+Umsjay6lpuPIqpwzD0NjfkdQeJxaCzQIhAOKY8mNuRipk45tF+Yzgxre+hjYDK4dMhObycrQ7UxH5KrcCCOL//////////wEQABoMNzIwMzc2NTY3MjQ4IgwAGhUwSC81dOsXd04qiwLLA6yk12s5W8BFoXo+Dh9b9j99Xscy6ujgXcLfCaMUOq+nvkQ2mlYqbM9p1E4CbcieidmjD4W+EH2HytpyW5HGlv3ElQCWxRilAgfiZszT/lA31zcZKKycHFn5FQ22Up9+pozqXnNH7B4/Gqgk+NH2fy/VHJlu2TP0oYHkMUcljzwYYJ/Cky0ZjTePmz2M55wVwg3dBY8YyTcn2UNfUtYd5RdzIUw8ufZOeFkmrPv5cDHScewIXi4wh7b3e0yxmma3RAlEpvIYP/pNNPh+1bZ5RGd5aBZroi1WqKa+H0cDel4VNjnEgJkI1R70Sdyn+oGsgc7+k9PllFn/eg5GruaSO/fYL9SXsiSaRgwwk4fjqAY6nQGZHIsR0xaYeCy5OTwLg7Jovn7HMFF+y6wzYwyLI5Jj1Qj9LIKwG/js/7Az/DOd+0YeK1F73FmCfB/z5TJoYkjcysb7tCS11D4Zxy9xN/pgx0t4CDxRduX2o6yuXkvqNsk7gKprfExsMA1QcKu142sqds6WuS1Ej6F+4HSoK1FIf6zEv1sc621N0FmidYmLy1Kr+Ims+STa6n3etmhs',
         #     region_name='ap-southeast-1'
         # )
         # self.dynamodb = self.session.resource('dynamodb')

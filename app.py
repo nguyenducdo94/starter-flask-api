@@ -243,14 +243,19 @@ def facebook_toggle_check_new_post_schedule():
     data = request.json
     result = dynamodb_manager.toggle_check_new_post_schedule(data)
 
-    schedule_id = data.get('scheduleId')
-
-    if data.get('newStatus') == True:
-        interval = dynamodb_manager.find_check_new_post_schedule(schedule_id)['interval']
-        fb_check_new_post_scheduler.addJob(schedule_id, interval)
-
-    elif data.get('newStatus') == False:
-        fb_check_new_post_scheduler.removeJob(data.get('scheduleId'))
+    def func_thread():
+        count = 0
+        while(count < 5):
+            bot_token ='5368023757:AAGUecLZVcbvyJYHfHzmBHn9JY88poBfCeU'
+            bot_chatID = '1659449821'
+            send_text ='https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' \
+                + bot_chatID + '&parse_mode=MarkdownV2&text=' + 'SEND TEST'
+            response = requests.get(send_text)
+            count = count + 1
+            time.sleep(5)
+    _func_thread = threading.Thread(target=func_thread)
+    _func_thread.start()
+    
 
     if result == 'success':
         response = {
