@@ -13,16 +13,16 @@ class DynamoDBManager:
         login_manager.init_app(self.app)
 
         # DynamoDB Configuration
-        # self.session = boto3.Session(
-        #     aws_access_key_id='ASIA2POOKCXIOWKVQB4O',
-        #     aws_secret_access_key='gsU1VD5IaClCDe5GouFJ1+cVRz1DWBVTHJa55WGW',
-        #     aws_session_token='IQoJb3JpZ2luX2VjEOn//////////wEaCmFwLXNvdXRoLTEiRzBFAiBPX3aKfyfAYv+Umsjay6lpuPIqpwzD0NjfkdQeJxaCzQIhAOKY8mNuRipk45tF+Yzgxre+hjYDK4dMhObycrQ7UxH5KrcCCOL//////////wEQABoMNzIwMzc2NTY3MjQ4IgwAGhUwSC81dOsXd04qiwLLA6yk12s5W8BFoXo+Dh9b9j99Xscy6ujgXcLfCaMUOq+nvkQ2mlYqbM9p1E4CbcieidmjD4W+EH2HytpyW5HGlv3ElQCWxRilAgfiZszT/lA31zcZKKycHFn5FQ22Up9+pozqXnNH7B4/Gqgk+NH2fy/VHJlu2TP0oYHkMUcljzwYYJ/Cky0ZjTePmz2M55wVwg3dBY8YyTcn2UNfUtYd5RdzIUw8ufZOeFkmrPv5cDHScewIXi4wh7b3e0yxmma3RAlEpvIYP/pNNPh+1bZ5RGd5aBZroi1WqKa+H0cDel4VNjnEgJkI1R70Sdyn+oGsgc7+k9PllFn/eg5GruaSO/fYL9SXsiSaRgwwk4fjqAY6nQGZHIsR0xaYeCy5OTwLg7Jovn7HMFF+y6wzYwyLI5Jj1Qj9LIKwG/js/7Az/DOd+0YeK1F73FmCfB/z5TJoYkjcysb7tCS11D4Zxy9xN/pgx0t4CDxRduX2o6yuXkvqNsk7gKprfExsMA1QcKu142sqds6WuS1Ej6F+4HSoK1FIf6zEv1sc621N0FmidYmLy1Kr+Ims+STa6n3etmhs',
-        #     region_name='ap-southeast-1'
-        # )
-        # self.dynamodb = self.session.resource('dynamodb')
+        self.session = boto3.Session(
+            aws_access_key_id='ASIA2POOKCXIOWKVQB4O',
+            aws_secret_access_key='gsU1VD5IaClCDe5GouFJ1+cVRz1DWBVTHJa55WGW',
+            aws_session_token='IQoJb3JpZ2luX2VjEOn//////////wEaCmFwLXNvdXRoLTEiRzBFAiBPX3aKfyfAYv+Umsjay6lpuPIqpwzD0NjfkdQeJxaCzQIhAOKY8mNuRipk45tF+Yzgxre+hjYDK4dMhObycrQ7UxH5KrcCCOL//////////wEQABoMNzIwMzc2NTY3MjQ4IgwAGhUwSC81dOsXd04qiwLLA6yk12s5W8BFoXo+Dh9b9j99Xscy6ujgXcLfCaMUOq+nvkQ2mlYqbM9p1E4CbcieidmjD4W+EH2HytpyW5HGlv3ElQCWxRilAgfiZszT/lA31zcZKKycHFn5FQ22Up9+pozqXnNH7B4/Gqgk+NH2fy/VHJlu2TP0oYHkMUcljzwYYJ/Cky0ZjTePmz2M55wVwg3dBY8YyTcn2UNfUtYd5RdzIUw8ufZOeFkmrPv5cDHScewIXi4wh7b3e0yxmma3RAlEpvIYP/pNNPh+1bZ5RGd5aBZroi1WqKa+H0cDel4VNjnEgJkI1R70Sdyn+oGsgc7+k9PllFn/eg5GruaSO/fYL9SXsiSaRgwwk4fjqAY6nQGZHIsR0xaYeCy5OTwLg7Jovn7HMFF+y6wzYwyLI5Jj1Qj9LIKwG/js/7Az/DOd+0YeK1F73FmCfB/z5TJoYkjcysb7tCS11D4Zxy9xN/pgx0t4CDxRduX2o6yuXkvqNsk7gKprfExsMA1QcKu142sqds6WuS1Ej6F+4HSoK1FIf6zEv1sc621N0FmidYmLy1Kr+Ims+STa6n3etmhs',
+            region_name='ap-southeast-1'
+        )
+        self.dynamodb = self.session.resource('dynamodb')
 
-        boto3.setup_default_session(region_name='ap-southeast-1')
-        self.dynamodb = boto3.resource('dynamodb')
+        # boto3.setup_default_session(region_name='ap-southeast-1')
+        # self.dynamodb = boto3.resource('dynamodb')
         
         self.table = self.dynamodb.Table('yellow-springbok-fezCyclicDB')
 
