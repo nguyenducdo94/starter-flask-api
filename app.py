@@ -314,10 +314,7 @@ def facebook_start_check_new_post_schedule():
 
             created_time_str = obj['created_time']
             created_time = datetime.datetime.strptime(created_time_str, '%Y-%m-%dT%H:%M:%S+0000')
-            created_time = created_time + datetime.timedelta(hours=7)
-
-            print(f'current: {current_time}')
-            print(f'created: {created_time}')
+            # created_time = created_time + datetime.timedelta(hours=7)
             
             # So sánh thời gian
             if created_time >= time_threshold and obj['id'] not in announced_id:
