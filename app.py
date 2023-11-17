@@ -443,6 +443,8 @@ import os
 import requests
 import configparser
 
+print('gethere')
+
 # Create a ConfigParser object
 config = configparser.ConfigParser()
 
