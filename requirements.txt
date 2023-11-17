@@ -15,4 +15,3 @@ psutil==5.9.5
 pymongo==4.3.3
 boto3==1.28.7
 APScheduler==3.10.4
-Telethon==1.32.0
